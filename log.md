@@ -49,3 +49,36 @@ This is like `for i in some_list:` in Python.
 
 `return (piecestate == Affiliation::Player1) ? 'P' : 'p'`
 This means if the condition is met, return 'P'; otherwise, return 'p'
+
+19-02-2024
+
+Let's analyse the logic of updating ZoCs.
+
+For the sake of convenience, let's suppose (i,j) means ith row, jth column. Such a coordinate system is precisely the inverse of the Catersian we use in real life but is quite common in matrices.
+
+Pawns: A Pawn located at (i,j) has a ZoC of (i+1,j+1) and (i+1,j-1) if the pawn belongs to white, (i-1,j+1) and (i-1,j-1) if it belongs to black.
+Pawns are also unique due to their movement rules being separated from their Zone of Control. This might be troublesome. We'll probably treat Pawns separately when dealing with movements.
+
+Advisors/Promoted Pawns: They follow a more straightforward rule. An Advisor or a Promoted Pawn located at (i,j) controls its four diagonal neighbours (i+1,j+1), (i+1,j-1), (i-1,j+1) and (i-1,j-1).
+I'm treating Advisors and Promoted Pawns as different objects because I plan to introduce the "Sut Met" special movement rule.
+
+Bishops: In Makruk, Bishops control the Advisor's ZoC plus the square in front of it. 
+A Bishop located at (i,j) has a basic ZoC of its four diagonal neighbours (i+1,j+1), (i+1,j-1), (i-1,j+1) and (i-1,j-1). Additionally, white Bishops controls (i+1,j) while black controls (i-1,j)
+
+Knights: Knights are the same as chess. A Knight located at (i,j) controls (i+1,j+2), (i+1,j-2), (i+2, j+1), (i+2, j-1), (i-1, j+2), (i-1, j-2), (i-2, j+1), (i-2, j-1)
+
+Rooks: Rooks are pretty different from any other pieces.
+A Rook at (i,j) follows such rules.
+(1) (i+1,j), (i-1,j), (i,j+1), (i,j-1) are in its ZoC.
+(2) Continue in four directions until the square is not empty: (i+k,j) or (i,j+k) is in its ZoC.
+
+Kings: 
+Kings control those within their eight neighbours that the opponent hasn't controlled.
+
+21-02-2024:
+
+Updated ZoC system.
+
+This is quite complicated...
+
+In the last update, I forgot to consider situation for Both sides to control the squares. Now I've updated the enum Affiliation to resolve that.
