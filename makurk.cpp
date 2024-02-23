@@ -5,6 +5,35 @@
 class Piece;
 class Chessboard;
 
+std::vector<std::pair<int, int>> KMove = {
+        {0, 1},  
+        {1, 0},  
+        {0, -1}, 
+        {-1, 0}, 
+        {1, 1},  
+        {1, -1}, 
+        {-1, -1},
+        {-1, 1}  
+    };
+
+std::vector<std::pair<int, int>> AMove = {      
+        {1, 1},  
+        {1, -1}, 
+        {-1, -1},
+        {-1, 1}  
+    };
+
+std::vector<std::pair<int, int>> NMove = {
+        {1, 2},  
+        {1, -2},  
+        {-1, 2}, 
+        {-1, -2}, 
+        {2, 1},  
+        {2, -1}, 
+        {-2, 1},
+        {-2, -1}  
+    };
+
 enum class Affiliation
 {
     None = 0,
@@ -58,42 +87,38 @@ class Piece
 {
 protected:
     Affiliation piecestate; // Piece color
-    Chessboard& board;
+    Chessboard &board;
+
 public:
-    Piece(Affiliation pcolor, Chessboard& board) : piecestate(pcolor), board(board){}; // Constructor
-    virtual ~Piece() {}                               // Virtual destructor for polymorphism
+    Piece(Affiliation pcolor, Chessboard &board) : piecestate(pcolor), board(board){}; // Constructor
+    virtual ~Piece() {}                                                                // Virtual destructor for polymorphism
     virtual char getSymbol() const = 0;
     Affiliation getAffiliation() const
     {
         return piecestate;
     }
-    virtual std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const = 0;
-
+    virtual std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const = 0;
 };
 
 class Pawn : public Piece
 {
 public:
-    Pawn(Affiliation color, Chessboard& board) : Piece(color,board){};
+    Pawn(Affiliation color, Chessboard &board) : Piece(color, board){};
 
     char getSymbol() const override
     {
         return (piecestate == Affiliation::Player1) ? 'P' : 'p'; // Example: Uppercase for white, lowercase for black
     };
 
-    virtual std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const override
+    virtual std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const override
     {
         std::vector<std::pair<int, int>> ZoCPawn;
         int sideModifier = controlStateToInt(piecestate);
 
+        ZoCPawn.push_back({i + sideModifier, j + 1});
 
+        ZoCPawn.push_back({i + sideModifier, j - 1});
 
-                ZoCPawn.push_back({i + sideModifier, j + 1});
-            
-
-                ZoCPawn.push_back({i + sideModifier, j - 1});
-
-        
         return ZoCPawn;
     }
 };
@@ -101,39 +126,31 @@ public:
 class Rook : public Piece
 {
 public:
-    Rook(Affiliation color, Chessboard& board) : Piece(color,board){};
+    Rook(Affiliation color, Chessboard &board) : Piece(color, board){};
     char getSymbol() const override
     {
         return (piecestate == Affiliation::Player1) ? 'R' : 'r';
     };
-    void ZoCLine(int i, int j, int di, int dj, std::vector<std::pair<int, int>>& ZoCL, const Chessboard& board) const;
-    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const override;
-
+    void ZoCLine(int i, int j, int di, int dj, std::vector<std::pair<int, int>> &ZoCL, const Chessboard &board) const;
+    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const override;
 };
 
 class Knight : public Piece
 {
 public:
-    Knight(Affiliation color, Chessboard& board) : Piece(color,board){};
+    Knight(Affiliation color, Chessboard &board) : Piece(color, board){};
 
     char getSymbol() const override
     {
         return (piecestate == Affiliation::Player1) ? 'N' : 'n';
     };
 
-    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const override
+    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const override
     {
         std::vector<std::pair<int, int>> ZoCKnight;
-        ZoCKnight.push_back({i+1, j+2});
-        ZoCKnight.push_back({i+1, j-2});
-        ZoCKnight.push_back({i-1, j+2});
-        ZoCKnight.push_back({i-1, j-2});
-
-        ZoCKnight.push_back({i+2, j+1});
-        ZoCKnight.push_back({i+2, j-1});
-        ZoCKnight.push_back({i-2, j+1});
-        ZoCKnight.push_back({i-2, j-1});
-
+        for (const auto& step: NMove){
+            ZoCKnight.push_back({step.first+i,step.second+j});
+        }
 
         return ZoCKnight;
     }
@@ -142,27 +159,27 @@ public:
 class Bishop : public Piece
 {
 public:
-    Bishop(Affiliation color, Chessboard& board) : Piece(color,board){};
+    Bishop(Affiliation color, Chessboard &board) : Piece(color, board){};
 
     char getSymbol() const override
     {
         return (piecestate == Affiliation::Player1) ? 'S' : 's';
     }
 
-    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const override
+    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const override
     {
         std::vector<std::pair<int, int>> ZoCBishop;
         int sideModifier = controlStateToInt(piecestate);
 
-        ZoCBishop.push_back({i + sideModifier, j + 1});
 
-        ZoCBishop.push_back({i + sideModifier, j - 1});
+        for (const auto& step: AMove){
+            ZoCBishop.push_back({step.first+i,step.second+j});
+        }
+
 
         ZoCBishop.push_back({i + sideModifier, j});
 
-        ZoCBishop.push_back({i - sideModifier, j + 1});
 
-        ZoCBishop.push_back({i - sideModifier, j - 1});
 
         return ZoCBishop;
     }
@@ -171,29 +188,23 @@ public:
 class Advisor : public Piece
 {
 public:
-    Advisor(Affiliation color, Chessboard& board) : Piece(color,board){};
+    Advisor(Affiliation color, Chessboard &board) : Piece(color, board){};
 
     char getSymbol() const override
     {
         return (piecestate == Affiliation::Player1) ? 'M' : 'm';
     }
 
-    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const override
+    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const override
     {
         std::vector<std::pair<int, int>> ZoCAdvisor;
 
-        ZoCAdvisor.push_back({i + 1, j + 1});
-
-        ZoCAdvisor.push_back({i + 1, j - 1});
-
-        ZoCAdvisor.push_back({i - 1, j + 1});
-
-        ZoCAdvisor.push_back({i - 1, j - 1});
-
+        for (const auto& step: AMove){
+            ZoCAdvisor.push_back({step.first+i,step.second+j});
+        }
         return ZoCAdvisor;
     }
 };
-
 
 // class Promoted_Pawn : public Piece
 // {
@@ -208,30 +219,23 @@ public:
 class King : public Piece
 {
 public:
-    King(Affiliation color, Chessboard& board) : Piece(color,board){};
+    King(Affiliation color, Chessboard &board) : Piece(color, board){};
     char getSymbol() const override
     {
         return (piecestate == Affiliation::Player1) ? 'K' : 'k';
     };
-
-        std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard& board) const override
+    
+    std::vector<std::pair<int, int>> updateZoC(int i, int j, const Chessboard &board) const override
     {
         std::vector<std::pair<int, int>> ZoCKing;
-        ZoCKing.push_back({i+1, j+1});
-        ZoCKing.push_back({i+1, j-1});
-        ZoCKing.push_back({i-1, j+1});
-        ZoCKing.push_back({i-1, j-1});
-
-        ZoCKing.push_back({i, j+1});
-        ZoCKing.push_back({i, j-1});
-        ZoCKing.push_back({i+1, j});
-        ZoCKing.push_back({i-1, j});
-
-
+        for (const auto& step: KMove){
+            ZoCKing.push_back({step.first+i,step.second+j});
+        }
         return ZoCKing;
     }
-};
 
+    bool pinOnLine(int i, int j, int di, int dj, const Chessboard &board){};
+};
 
 class Chessboard
 {
@@ -250,25 +254,25 @@ public:
         // Initialize Pawns
         for (int i = 0; i < 8; ++i)
         {
-            board[2][i] = std::make_shared<Pawn>(Affiliation::Player1,*this); // Player1's pawns
-            board[5][i] = std::make_shared<Pawn>(Affiliation::Player2,*this); // Player2's pawns
+            board[2][i] = std::make_shared<Pawn>(Affiliation::Player1, *this); // Player1's pawns
+            board[5][i] = std::make_shared<Pawn>(Affiliation::Player2, *this); // Player2's pawns
         }
         // Initialize Rooks
-        board[0][0] = board[0][7] = std::make_shared<Rook>(Affiliation::Player1,*this);
-        board[7][0] = board[7][7] = std::make_shared<Rook>(Affiliation::Player2,*this);
+        board[0][0] = board[0][7] = std::make_shared<Rook>(Affiliation::Player1, *this);
+        board[7][0] = board[7][7] = std::make_shared<Rook>(Affiliation::Player2, *this);
         // Initialize Knights
-        board[0][1] = board[0][6] = std::make_shared<Knight>(Affiliation::Player1,*this);
-        board[7][1] = board[7][6] = std::make_shared<Knight>(Affiliation::Player2,*this);
+        board[0][1] = board[0][6] = std::make_shared<Knight>(Affiliation::Player1, *this);
+        board[7][1] = board[7][6] = std::make_shared<Knight>(Affiliation::Player2, *this);
 
         // Initialize Bishops
-        board[0][2] = board[0][5] = std::make_shared<Bishop>(Affiliation::Player1,*this);
-        board[7][2] = board[7][5] = std::make_shared<Bishop>(Affiliation::Player2,*this);
+        board[0][2] = board[0][5] = std::make_shared<Bishop>(Affiliation::Player1, *this);
+        board[7][2] = board[7][5] = std::make_shared<Bishop>(Affiliation::Player2, *this);
         // Initialize Kings
-        board[0][3] = std::make_shared<King>(Affiliation::Player1,*this);
-        board[7][4] = std::make_shared<King>(Affiliation::Player2,*this);
+        board[0][3] = std::make_shared<King>(Affiliation::Player1, *this);
+        board[7][4] = std::make_shared<King>(Affiliation::Player2, *this);
         // Initialize Advisors
-        board[0][4] = std::make_shared<Advisor>(Affiliation::Player1,*this);
-        board[7][3] = std::make_shared<Advisor>(Affiliation::Player2,*this);
+        board[0][4] = std::make_shared<Advisor>(Affiliation::Player1, *this);
+        board[7][3] = std::make_shared<Advisor>(Affiliation::Player2, *this);
     };
 
     std::shared_ptr<Piece> getPiece(int i, int j) const
@@ -283,6 +287,27 @@ public:
         }
     }
 
+    std::pair<int, int> kingPosition(Affiliation aff) const
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (board[i][j])
+                {
+                    
+                
+                
+                if (board[i][j]->getSymbol() == 'K' && aff == Affiliation::Player1)
+                    return {i, j};
+                else if (board[i][j]->getSymbol() == 'k' && aff == Affiliation::Player2)
+                {
+                    return {i, j};
+                }}
+            }
+        }
+        return {-1, -1};
+    }
     // Test functions
     void printBoard()
     {
@@ -302,25 +327,27 @@ public:
     }
 };
 
-void Rook::ZoCLine(int i,int j,int di, int dj, std::vector<std::pair<int, int>>& ZoCL, const Chessboard& board) const{
-        int k = 1;
-        while (board.getPiece(i+k*di,j+k*dj) == nullptr && i+k*di < 8 && i+k*di >=0 && j+k*dj < 8 && j+k*dj >= 0)
-        { 
-            ZoCL.push_back({i+k*di, j+k*dj});
-            k++;
-        }
-        
-    }
-
-std::vector<std::pair<int, int>> Rook::updateZoC(int i, int j, const Chessboard& board) const
+void Rook::ZoCLine(int i, int j, int di, int dj, std::vector<std::pair<int, int>> &ZoCL, const Chessboard &board) const
+{
+    int k = 1;
+    while (board.getPiece(i + k * di, j + k * dj) == nullptr && i + k * di < 8 && i + k * di >= 0 && j + k * dj < 8 && j + k * dj >= 0)
     {
-        std::vector<std::pair<int, int>> ZoCRook;
-        ZoCLine(i,j,1,0,ZoCRook, board);
-        ZoCLine(i,j,0,1,ZoCRook, board);
-        ZoCLine(i,j,-1,0,ZoCRook, board);
-        ZoCLine(i,j,0,-1,ZoCRook, board);
-        return ZoCRook;
+        ZoCL.push_back({i + k * di, j + k * dj});
+        k++;
     }
+}
+
+std::vector<std::pair<int, int>> Rook::updateZoC(int i, int j, const Chessboard &board) const
+{
+    std::vector<std::pair<int, int>> ZoCRook;
+    ZoCLine(i, j, 1, 0, ZoCRook, board);
+    ZoCLine(i, j, 0, 1, ZoCRook, board);
+    ZoCLine(i, j, -1, 0, ZoCRook, board);
+    ZoCLine(i, j, 0, -1, ZoCRook, board);
+    return ZoCRook;
+}
+
+// bool King::pinOnLine(int i, int j, int di, int dj, const Chessboard &board){};
 
 class ZoneOfControl
 {
@@ -374,7 +401,7 @@ public:
     }
 
     // Method to update cs of the entire board
-    void updateAllZoC(const Chessboard& board)
+    void updateAllZoC(const Chessboard &board)
     {
         std::cout << "Updating All ZoC..." << std::endl;
 
@@ -385,13 +412,44 @@ public:
                 const std::shared_ptr<Piece> piece = board.getPiece(i, j);
                 if (piece)
                 {
-                    std::vector<std::pair<int, int>> pieceZoC = piece->updateZoC(i, j,board);
+                    std::vector<std::pair<int, int>> pieceZoC = piece->updateZoC(i, j, board);
                     piecewiseZoC(pieceZoC, piece->getAffiliation());
                 }
             }
         }
     }
 
+    std::vector<std::pair<int,int>> rmKingZoC(const Chessboard &board, Affiliation aff){
+        std::vector<std::pair<int,int>> OverlapZoC;
+        std::pair<int,int> kps = board.kingPosition(aff);
+        for (const auto&step : KMove)
+        {
+            std::pair<int,int> newstep = {kps.first + step.first,kps.second + step.second};
+            
+                if (zocboard[newstep.first][newstep.second] == Affiliation::Both)
+                {
+                    OverlapZoC.push_back(newstep);
+                }
+                
+            return OverlapZoC;
+            
+        }
+        
+    }
+
+    bool isCheck(Affiliation aff, const Chessboard &board) const
+    {
+        std::pair<int, int> kPos = board.kingPosition(aff);
+        Affiliation kpa = zocboard[kPos.first][kPos.second];
+        if (kPos.first != -1 && (kpa == OtherAff(aff) || kpa == Affiliation::Both))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     // Test functions:
 
     void printZoC() const
@@ -407,7 +465,6 @@ public:
             std::cout << std::endl;
         }
         std::cout << "------ZoC Board Printed------" << std::endl;
-
     }
 };
 
@@ -428,6 +485,8 @@ int main()
     ZoneOfControl ZoC;
     ZoC.updateAllZoC(chessboard);
     ZoC.printZoC();
-
+    std::pair<int,int> kp1 = chessboard.kingPosition(Affiliation::Player1);
+    std::cout << "KP1: ( " << kp1.first << ", " << kp1.second << " )" << std::endl;
+    std::cout << "Is King 2 in check: " << ZoC.isCheck(Affiliation::Player2,chessboard) << std:: endl;
     return 0;
 }

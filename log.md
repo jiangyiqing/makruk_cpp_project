@@ -82,3 +82,30 @@ Updated ZoC system.
 This is quite complicated...
 
 In the last update, I forgot to consider situation for Both sides to control the squares. Now I've updated the enum Affiliation to resolve that.
+
+22-02-2024
+
+Now, our ZoC system looks pretty complete. But there are two more things: pins and checks.
+
+First, let's look at pins.
+
+If a piece gets pinned (which, in Makruk, only Rooks can do), its ZoC is the intersection of the pinning piece and its original ZoC.
+
+Let's have some examples.
+
+Case 1: Black Rook on a2. White King on f2. White Pawn on e2. In this case, the Pawn could not move, nor could it control f3 or d3.
+
+Case 2: Replace the white Pawn with a Rook. In this case, the Rook could either stay where it has been or capture the black Rook on a2.
+
+Checks occur when the King is in the opponent's ZoC after a move by the opponent. It also changes the ZoC in a more complicated way. When being checked, the ZoC reduces to the union of these three scenarios:
+(1) The King breaks out from the check.
+(2) Some piece takes out the checker.
+(3) Some piece blocks the check.
+For case (3), we have: This piece is a pawn, or this piece is not a pawn.
+In Makruk, only the Rook check could be blocked; this simplifies the case.
+We'll first look at non-pawn cases.
+
+23-02-2024
+
+While I was carrying out these steps, I found something serious. It might have been better if I had used 2-D vectors of vectors of pointers as ZoC rather than 2-D vectors of enum Affiliation. Yet, I came up with something that might work. First, update the ZoC, then remove all squares that both a King and the opponent have controlled. Finally, update the ZoC without King.
+I'll try it later.
